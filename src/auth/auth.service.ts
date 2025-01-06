@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcryptjs';
 
 import { CreateUserDdo } from './dto/create-user.dto';
 import { Model } from 'mongoose';
@@ -16,8 +17,15 @@ export class AuthService {
 
   async create(createUserDto: CreateUserDdo): Promise<User> {
     try {
-      const newUser = new this.userModel(createUserDto); // Creando instancia de un usuario
-      return await newUser.save();
+      const { password, ...userData } = createUserDto;
+
+      const newUser = new this.userModel({
+        password: bcrypt.hashSync(password, 10),
+        ...userData,
+      }); // Creando instancia de un usuario con la contraseña encriptada
+      await newUser.save();
+      const { password: _, ...user } = newUser.toJSON();
+      return newUser;
     } catch (error) {
       if (error.code == 11000)
         throw new BadRequestException(`${createUserDto.email} already exists`);
