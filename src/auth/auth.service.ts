@@ -47,7 +47,7 @@ export class AuthService {
     const user = await this.create(registerUserDto);
     // const user = await this.userModel.findOne({ email: (await newUser).email });
     // console.log(user.id);
-    const token = this.getJwt({id: user._id});
+    const token = this.getJwt({ id: user._id });
     return {
       user,
       token,
@@ -67,8 +67,14 @@ export class AuthService {
     };
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  findAll(): Promise<User[]> {
+    return this.userModel.find();
+  }
+
+  async findUserById(id: string) {
+    const user = await this.userModel.findById(id);
+    const { password, ...resto } = user.toJSON();
+    return resto;
   }
 
   findOne(id: number) {
