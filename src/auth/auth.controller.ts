@@ -8,9 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDdo } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { LoginDto } from './dto/login-dto';
+import { RegisterUserDto, CreateUserDto, UpdateUserDto, LoginDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -21,8 +19,13 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @Post('/register')
+  register(@Body() registerUserDto: RegisterUserDto) {
+    return this.authService.register(registerUserDto);
+  }
+
   @Post()
-  login(@Body() createUserDdo: CreateUserDdo) {
+  login(@Body() createUserDdo: CreateUserDto) {
     return this.authService.create(createUserDdo);
   }
 

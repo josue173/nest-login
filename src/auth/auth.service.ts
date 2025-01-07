@@ -5,19 +5,27 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
+
+import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 
-import { CreateUserDdo } from './dto/create-user.dto';
-import { Model } from 'mongoose';
+import { CreateUserDto } from './dto/create-user.dto';
+import { JwtPayload } from './interfaces/jwt.payload';
+import { LoginDto } from './dto/login-dto';
+import { LoginResponse } from './interfaces/login-response';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/auth.entity';
-import { LoginDto } from './dto/login-dto';
+import { RegisterUserDto } from './dto';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private _jwtService: JwtService,
+  ) {}
 
-  async create(createUserDto: CreateUserDdo): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const { password, ...userData } = createUserDto;
 
@@ -35,7 +43,18 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto) {
+  async register(registerUserDto: RegisterUserDto): Promise<LoginResponse> {
+    const user = await this.create(registerUserDto);
+    // const user = await this.userModel.findOne({ email: (await newUser).email });
+    // console.log(user.id);
+    const token = this.getJwt({id: user._id});
+    return {
+      user,
+      token,
+    };
+  }
+
+  async login(loginDto: LoginDto): Promise<LoginResponse> {
     const { email, password } = loginDto;
     const user = await this.userModel.findOne({ email });
     if (!user) throw new UnauthorizedException(`Not valid credentials`);
@@ -43,8 +62,8 @@ export class AuthService {
       throw new UnauthorizedException(`Not valid password`);
     const { password: _, ...resto } = user.toJSON();
     return {
-      ok: true,
-      ...resto,
+      user: resto,
+      token: this.getJwt({ id: user.id }),
     };
   }
 
@@ -62,5 +81,10 @@ export class AuthService {
 
   remove(id: number) {
     return `This action removes a #${id} auth`;
+  }
+
+  getJwt(payload: JwtPayload) {
+    const token = this._jwtService.sign(payload);
+    return token;
   }
 }
