@@ -77,17 +77,17 @@ export class AuthService {
     return resto;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+  // findOne(id: number) {
+  //   return `This action returns a #${id} auth`;
+  // }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} auth`;
-  }
+  // update(id: number, updateUserDto: UpdateUserDto) {
+  //   return `This action updates a #${id} auth`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} auth`;
+  // }
 
   getJwt(payload: JwtPayload) {
     const token = this._jwtService.sign(payload);
